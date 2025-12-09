@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>魚魚代購後台系統</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<div class="sidebar">
+  <h2>🐟 魚魚後台</h2>
+  <button class="sidebar-btn active">訂單管理</button>
+</div>
+
+<div class="main">
+  <div class="top-bar">
+    <h1>訂單管理</h1>
+    <button id="addOrderBtn" class="add-btn">＋ 新增訂單</button>
+  </div>
+
+  <div id="orderList" class="order-list">
+    <!-- 訂單會在 JS 裡動態生成 -->
+  </div>
+</div>
+
+<!-- 新增訂單的 Modal -->
+<div id="orderModal" class="modal hidden">
+  <div class="modal-content">
+    <h2>新增訂單</h2>
+    
+    <label>LINE 名稱</label>
+    <input type="text" id="lineName">
+
+    <label>客人名稱</label>
+    <input type="text" id="customerName">
+
+    <label>商品名稱</label>
+    <input type="text" id="productName">
+
+    <label>款式</label>
+    <input type="text" id="style">
+
+    <label>數量</label>
+    <input type="number" id="quantity" value="1">
+
+    <label>售價（台幣）</label>
+    <input type="number" id="priceTwd" value="0">
+
+    <label>成本（日幣）</label>
+    <input type="number" id="costJpy" value="0">
+
+    <label>成本（台幣，自動 ×0.21）</label>
+    <input type="number" id="costTwd" disabled>
+
+    <label>已付金額</label>
+    <input type="number" id="paid" value="0">
+
+    <label>物流方式</label>
+    <input type="text" id="shippingType">
+
+    <label>商品網址</label>
+    <input type="text" id="url">
+
+    <label>備註</label>
+    <textarea id="notes"></textarea>
+
+    <div class="modal-btns">
+      <button id="saveOrder" class="save-btn">儲存</button>
+      <button id="closeModal" class="cancel-btn">取消</button>
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
