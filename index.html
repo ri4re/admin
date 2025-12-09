@@ -3,31 +3,103 @@
 <head>
   <meta charset="UTF-8" />
   <title>魚魚代購後台系統</title>
+
+  <!-- 字體 -->
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@300;400;500;700&display=swap" rel="stylesheet">
+
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
 
-<div class="sidebar">
-  <h2>🐟 魚魚後台</h2>
-  <button class="sidebar-btn active">訂單管理</button>
-</div>
+<!-- 📌 左側 Sidebar -->
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <h2>🛒 魚魚代購</h2>
+    <p class="online-dot">● 線上</p>
+  </div>
 
-<div class="main">
-  <div class="top-bar">
-    <h1>訂單管理</h1>
+  <div class="sidebar-menu">
+    <button class="menu-btn active">📋 訂單管理看板</button>
+    <button class="menu-btn">👥 用戶列表</button>
+    <button class="menu-btn">📊 財務分析中心</button>
+  </div>
+
+  <div class="sidebar-tools">
+    <p class="tools-title">TOOLS</p>
+    <button class="menu-btn">🧮 代購計算機</button>
+    <button class="menu-btn">🌐 翻譯 / 小幫手</button>
+  </div>
+</aside>
+
+<!-- 📌 主內容 -->
+<main class="main">
+
+  <!-- 上方四個資訊卡片 -->
+  <section class="top-cards">
+
+    <!-- 匯率卡片 -->
+    <div class="card">
+      <p class="card-title">JP JPY → TWD</p>
+      <h2 id="rateValue">--</h2>
+      <p class="card-time" id="rateTime">--:--</p>
+    </div>
+
+    <div class="card">
+      <p class="card-title">總訂單數</p>
+      <h2 id="totalOrders">0</h2>
+    </div>
+
+    <div class="card">
+      <p class="card-title">未完成訂單</p>
+      <h2 id="pendingOrders">0</h2>
+    </div>
+
+    <div class="card">
+      <p class="card-title">總預估利潤</p>
+      <h2 id="totalProfit">NT$ 0</h2>
+    </div>
+  </section>
+
+  <!-- 搜尋 + 日期篩選 -->
+  <section class="filter-bar">
+    <input type="text" id="searchInput" class="search-box" placeholder="🔍 搜尋訂單 / 客人 / LINE 名稱">
+
+    <div class="date-range">
+      <input type="date" id="dateStart">
+      <span>～</span>
+      <input type="date" id="dateEnd">
+    </div>
+
+    <div class="checkbox-wrap">
+      <input type="checkbox" id="filterIncomplete">
+      <label for="filterIncomplete">未完成訂單</label>
+    </div>
+
     <button id="addOrderBtn" class="add-btn">＋ 新增訂單</button>
-  </div>
+  </section>
 
-  <div id="orderList" class="order-list">
-    <!-- 訂單會在 JS 裡動態生成 -->
-  </div>
-</div>
+  <!-- 表格標題列 -->
+  <section class="table-header">
+    <div>訂單編號 / 日期</div>
+    <div>客戶資料</div>
+    <div>商品資訊</div>
+    <div>財務</div>
+    <div>狀態</div>
+  </section>
 
-<!-- 新增訂單的 Modal -->
+  <!-- 訂單列表 -->
+  <section id="orderList" class="order-list"></section>
+
+</main>
+
+<!-- 📌 新增訂單 Modal -->
 <div id="orderModal" class="modal hidden">
   <div class="modal-content">
     <h2>新增訂單</h2>
-    
+
+    <label>訂單建立日期</label>
+    <input type="date" id="orderDate">
+
     <label>LINE 名稱</label>
     <input type="text" id="lineName">
 
@@ -43,20 +115,17 @@
     <label>數量</label>
     <input type="number" id="quantity" value="1">
 
-    <label>售價（台幣）</label>
-    <input type="number" id="priceTwd" value="0">
+    <label>售價（TWD）</label>
+    <input type="number" id="priceTwd">
 
     <label>成本（日幣）</label>
-    <input type="number" id="costJpy" value="0">
+    <input type="number" id="costJpy">
 
-    <label>成本（台幣，自動 ×0.21）</label>
+    <label>成本（TWD，自動 ×0.21）</label>
     <input type="number" id="costTwd" disabled>
 
     <label>已付金額</label>
-    <input type="number" id="paid" value="0">
-
-    <label>物流方式</label>
-    <input type="text" id="shippingType">
+    <input type="number" id="paid">
 
     <label>商品網址</label>
     <input type="text" id="url">
@@ -64,7 +133,7 @@
     <label>備註</label>
     <textarea id="notes"></textarea>
 
-    <div class="modal-btns">
+    <div class="modal-buttons">
       <button id="saveOrder" class="save-btn">儲存</button>
       <button id="closeModal" class="cancel-btn">取消</button>
     </div>
@@ -72,5 +141,6 @@
 </div>
 
 <script src="script.js"></script>
+
 </body>
 </html>
