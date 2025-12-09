@@ -1,88 +1,124 @@
-// 開啟 / 關閉 Modal
-const addOrderBtn = document.getElementById("addOrderBtn");
-const orderModal = document.getElementById("orderModal");
-const closeModal = document.getElementById("closeModal");
-const saveOrder = document.getElementById("saveOrder");
+// 📌 匯率自動抓取
+async function fetchRate() {
+  try {
+    const res = await fetch("https://api.exchangerate.host/latest?base=JPY&symbols=TWD");
+    const data = await res.json();
 
-addOrderBtn.onclick = () => orderModal.classList.remove("hidden");
-closeModal.onclick = () => orderModal.classList.add("hidden");
+    const rate = data.rates.TWD;
+    document.getElementById("rateValue").innerText = rate.toFixed(3);
 
-// 成本換算（日幣 → 台幣）
-const costJpy = document.getElementById("costJpy");
-const costTwd = document.getElementById("costTwd");
-
-costJpy.addEventListener("input", () => {
-  costTwd.value = Math.round(costJpy.value * 0.21);
-});
-
-// 生成流水號 B: AYU-YYYYMM-XX
-function generateOrderId(existing = []) {
-  const d = new Date();
-  const ym = `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,"0")}`;
-
-  const prefix = `AYU-${ym}-`;
-  const sameMonth = existing.filter(id => id.startsWith(prefix));
-
-  let max = 0;
-  sameMonth.forEach(id => {
-    const num = parseInt(id.split("-")[2]);
-    if (num > max) max = num;
-  });
-
-  const next = String(max + 1).padStart(2, "0");
-  return `${prefix}${next}`;
+    const now = new Date();
+    document.getElementById("rateTime").innerText =
+      now.toLocaleTimeString("zh-TW", { hour: "2-digit", minute: "2-digit" });
+  } catch (err) {
+    console.log("匯率取得失敗", err);
+  }
 }
 
-let orderData = []; // 暫存（之後改為 Notion資料）
+fetchRate();
+setInterval(fetchRate, 3600000);
 
-// 儲存訂單
-saveOrder.onclick = () => {
-  const price = Number(document.getElementById("priceTwd").value);
+// 📌 假資料（你之後會接 Notion）
+let orders = [];
+
+// 📌 生成流水號 AYU-YYYYMM-XX
+function generateOrderId() {
+  const now = new Date();
+  const ym = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}`;
+
+  const existing = orders.filter(o => o.orderId.startsWith(`AYU-${ym}-`));
+  const next = String(existing.length + 1).padStart(2, "0");
+
+  return `AYU-${ym}-${next}`;
+}
+
+// 📌 打開 / 關閉新增訂單
+const modal = document.getElementById("orderModal");
+document.getElementById("addOrderBtn").onclick = () => {
+  modal.classList.remove("hidden");
+
+  // 訂單建立日期自動填入今天
+  const today = new Date().toISOString().split("T")[0];
+  document.getElementById("orderDate").value = today;
+};
+document.getElementById("closeModal").onclick = () => modal.classList.add("hidden");
+
+// 成本（日幣→台幣）
+document.getElementById("costJpy").addEventListener("input", () => {
+  document.getElementById("costTwd").value =
+    Math.round(document.getElementById("costJpy").value * 0.21);
+});
+
+// 📌 儲存訂單
+document.getElementById("saveOrder").onclick = () => {
+  const price = Number(priceTwd.value);
   const cost = Number(costTwd.value);
-  const paid = Number(document.getElementById("paid").value);
-
-  const id = generateOrderId(orderData.map(o => o.orderId));
+  const paidAmt = Number(paid.value);
 
   const order = {
-    orderId: id,
-    lineName: lineName.value,
+    orderId: generateOrderId(),
+    date: orderDate.value,
     customerName: customerName.value,
+    lineName: lineName.value,
     productName: productName.value,
     style: style.value,
-    quantity: quantity.value,
-    priceTwd: price,
-    costTwd: cost,
+    qty: quantity.value,
+    price,
     profit: price - cost,
-    paid,
-    remain: price - paid,
+    paid: paidAmt,
+    statusShip: "備貨中",
+    statusPay: paidAmt >= price ? "已付清" : "待付款"
   };
 
-  orderData.push(order);
+  orders.push(order);
+  modal.classList.add("hidden");
   renderOrders();
-  orderModal.classList.add("hidden");
 };
 
-// 渲染訂單列表
+// 📌 渲染訂單列表
 function renderOrders() {
   const list = document.getElementById("orderList");
   list.innerHTML = "";
 
-  orderData.forEach(o => {
-    const card = document.createElement("div");
-    card.className = "order-card";
+  orders.forEach(o => {
+    const div = document.createElement("div");
+    div.className = "order-card";
 
-    card.innerHTML = `
-      <span><b>${o.orderId}</b></span>
-      <span>${o.productName} x${o.quantity}</span>
-      <span>售價：$${o.priceTwd}</span>
-      <span>成本：$${o.costTwd}</span>
-      <span>利潤：$${o.profit}</span>
-      <span>已付：$${o.paid}</span>
-      <span>剩餘：$${o.remain}</span>
+    div.innerHTML = `
+      <div>
+        <div class="order-title">${o.orderId}</div>
+        <div>${o.date}</div>
+      </div>
+
+      <div>
+        <div>${o.customerName}</div>
+        <div class="customer-line">● ${o.lineName}</div>
+      </div>
+
+      <div>
+        <div>${o.productName}</div>
+        <div class="product-style">${o.style}</div>
+        <div>x${o.qty}</div>
+      </div>
+
+      <div>
+        NT$ ${o.price}<br>
+        <span style="color:green;">利潤：${o.profit}</span>
+      </div>
+
+      <div>
+        <span class="status-pill status-ready">${o.statusShip}</span><br>
+        <span class="status-pill ${o.statusPay === "已付清" ? "status-paid" : "status-unpaid"}">${o.statusPay}</span>
+      </div>
     `;
 
-    list.appendChild(card);
+    list.appendChild(div);
   });
+
+  document.getElementById("totalOrders").innerText = orders.length;
+  document.getElementById("pendingOrders").innerText = orders.filter(o => o.statusPay !== "已付清").length;
+  document.getElementById("totalProfit").innerText =
+    "NT$ " + orders.reduce((a, b) => a + b.profit, 0);
 }
 
 renderOrders();
